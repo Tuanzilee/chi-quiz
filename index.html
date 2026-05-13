@@ -70,8 +70,47 @@ body{background:var(--bg);font-family:'Noto Serif TC',Georgia,'宋體',serif;col
 .tools{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px;font-family:sans-serif;}
 .tbtn{min-height:44px;padding:8px 4px;border-radius:10px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:11px;color:var(--muted);text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;}
 .tbtn.danger{background:var(--red-bg);color:var(--red);border-color:var(--red-bd);}
+/* Reference tools */
+.ref-tools{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px;font-family:sans-serif;}
+.rtbtn{min-height:44px;padding:10px 8px;border-radius:10px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:12px;color:var(--text);display:flex;align-items:center;justify-content:center;gap:6px;font-weight:500;}
+.rtbtn:hover{background:var(--bg);}
 .swh{text-align:center;font-size:10px;color:#ccc;margin-top:6px;font-family:sans-serif;}
 .empty{text-align:center;padding:3rem 0;color:var(--muted);font-size:14px;font-family:sans-serif;}
+/* Overlay + Bottom Sheet */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .25s;z-index:100;}
+.overlay.open{opacity:1;pointer-events:all;}
+.sheet{position:fixed;bottom:0;left:0;right:0;max-width:640px;margin:0 auto;background:var(--card);border-radius:20px 20px 0 0;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);z-index:101;max-height:88vh;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom);}
+.sheet.open{transform:translateY(0);}
+.sh-handle{width:36px;height:4px;background:#ddd;border-radius:2px;margin:12px auto 0;flex-shrink:0;}
+.sh-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;flex-shrink:0;border-bottom:1px solid var(--border);}
+.sh-title{font-size:15px;font-weight:700;color:var(--text);}
+.sh-close{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:var(--bg);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--muted);}
+.sh-body{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 24px;flex:1;}
+/* Errata styles */
+.sh-sect{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin:14px 0 8px;font-family:sans-serif;}
+.sh-sect:first-child{margin-top:0;}
+.err-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.err-card{background:var(--bg);border-radius:10px;padding:10px 12px;}
+.err-top{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+.err-wrong{font-size:18px;color:var(--red);text-decoration:line-through;opacity:.7;}
+.err-arr{font-size:14px;color:var(--muted);}
+.err-right{font-size:22px;font-weight:700;color:var(--green);}
+.err-phone{font-size:11px;color:var(--muted);font-family:sans-serif;margin-bottom:2px;}
+.err-word{font-size:12px;color:var(--text);font-weight:500;margin-bottom:1px;}
+.err-def{font-size:11px;color:var(--muted);font-family:sans-serif;}
+/* Text styles */
+.tx-item{background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:8px;}
+.tx-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.tx-tier{display:inline-block;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:700;font-family:sans-serif;flex-shrink:0;}
+.tx-must{background:#fde8e8;color:#c0392b;}
+.tx-hi{background:#fef3d0;color:#9a6c00;}
+.tx-med{background:var(--green-bg);color:var(--green);}
+.tx-name{font-size:14px;font-weight:700;color:var(--text);}
+.tx-author{font-size:11px;color:var(--muted);font-family:sans-serif;margin-left:auto;}
+.tx-sents{display:flex;flex-direction:column;gap:6px;}
+.tx-sent{font-size:14px;line-height:1.9;color:var(--text);background:var(--card);border-radius:6px;padding:7px 10px;}
+.tx-sent mark{background:var(--purple-bg);color:var(--purple);font-weight:700;border-radius:2px;padding:0 1px;}
+.tx-note{font-size:11px;color:var(--muted);font-family:sans-serif;margin-top:2px;padding-left:2px;}
 </style>
 </head>
 <body>
@@ -95,11 +134,26 @@ body{background:var(--bg);font-family:'Noto Serif TC',Georgia,'宋體',serif;col
     <button class="tbtn" onclick="reviewOnly()">📖<br>未掌握</button>
     <button class="tbtn" id="rb" onclick="handleReset()">↺<br>重置</button>
   </div>
+  <div class="ref-tools">
+    <button class="rtbtn" onclick="openSheet('errata')">📝 易錯字清單</button>
+    <button class="rtbtn" onclick="openSheet('texts')">📚 必背文本關鍵句</button>
+  </div>
 </div>
+
+<div class="overlay" id="overlay" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sh-handle"></div>
+  <div class="sh-hdr">
+    <span class="sh-title" id="sh-title"></span>
+    <button class="sh-close" onclick="closeSheet()">✕</button>
+  </div>
+  <div class="sh-body" id="sh-body"></div>
+</div>
+
 <script>
+// ── QUESTION BANK ──
 const Q=[
-// ── 佳句填空 111年 ──
-{id:1,cat:'佳句填空',src:'《論語》',q:'巧言「＿＿」色，鮮矣仁。',a:'令',note:'令色＝諂媚臉色；令仁→與仁德相違背',yr:'111'},
+{id:1,cat:'佳句填空',src:'《論語》',q:'巧言「＿＿」色，鮮矣仁。',a:'令',note:'令色＝諂媚臉色；與仁德相違背',yr:'111'},
 {id:2,cat:'佳句填空',src:'《論語》',q:'學而不思則罔，思而不學則「＿＿」。',a:'殆',note:'殆＝危害迷惑；只空想不學，知識無根基反而危險',yr:'111'},
 {id:3,cat:'佳句填空',src:'《孟子》',q:'學問之道無他，求其「＿＿」心而已矣。',a:'放',note:'放心＝失去的本心；求放心＝找回迷失的善心',yr:'111'},
 {id:4,cat:'佳句填空',src:'《孟子》',q:'食「＿＿」，性也。',a:'色',note:'食慾與性慾是天生本性（告子語，見孟子告子上）',yr:'111'},
@@ -109,7 +163,6 @@ const Q=[
 {id:8,cat:'佳句填空',src:'《詩經·關雎》',q:'窈窕淑女，君子好「＿＿」。',a:'逑',note:'逑＝配偶；好逑＝理想的伴侶（詩經第一篇）',yr:'111'},
 {id:9,cat:'佳句填空',src:'杜甫〈望嶽〉',q:'會當「＿＿」絕頂，一覽眾山小。',a:'凌',note:'凌＝登上超越；表達登頂俯瞰的豪情壯志',yr:'111'},
 {id:10,cat:'佳句填空',src:'蘇軾〈定風波〉',q:'誰怕，一「＿＿」煙雨任平生。',a:'蓑',note:'蓑＝草製防雨衣；一蓑煙雨＝披蓑任憑風雨，豁達態度',yr:'111'},
-// ── 佳句填空 112年 ──
 {id:11,cat:'佳句填空',src:'諸葛亮《出師表》',q:'不宜妄自「＿＿」，引喻失義，以塞忠諫之路也。',a:'菲薄',note:'菲薄＝輕視；妄自菲薄＝不當地貶低自己，有礙納諫',yr:'112'},
 {id:12,cat:'佳句填空',src:'諸葛亮《出師表》',q:'若有作奸「＿＿」及為忠善者，宜付有司，論其刑賞。',a:'犯科',note:'犯科＝觸犯法令；作奸犯科＝做壞事違法',yr:'112'},
 {id:13,cat:'佳句填空',src:'陶淵明《桃花源記》',q:'復行數十步，「＿＿」開朗，土地平曠，屋舍儼然。',a:'豁然',note:'豁然＝開闊貌；豁然開朗（後引申為突然明白道理）',yr:'112'},
@@ -120,7 +173,6 @@ const Q=[
 {id:18,cat:'佳句填空',src:'歐陽修《醉翁亭記》',q:'「＿＿」之意不在酒，在乎山水之間也。',a:'醉翁',note:'醉翁＝歐陽修自號；「醉翁之意不在酒」典故出處',yr:'112'},
 {id:19,cat:'佳句填空',src:'歐陽修《醉翁亭記》',q:'野芳發而幽香，佳木秀而繁陰，風霜高潔，水落而「＿＿」者。',a:'石出',note:'水落石出＝水退後石頭顯現；後比喻事情真相大白',yr:'112'},
 {id:20,cat:'佳句填空',src:'《左傳》燭之武退秦師',q:'若舍鄭以為東「＿＿」，行李之往來，共其乏困，君亦無所害。',a:'道主',note:'東道主＝東方道路上的主人；後泛指接待賓客的一方',yr:'112'},
-// ── 佳句填空 114年 ──
 {id:21,cat:'佳句填空',src:'《論語》',q:'君子坦蕩蕩，小人「＿＿」。',a:'長戚戚',note:'長戚戚＝常感憂愁、局促不安；與君子坦然形成對比',yr:'114'},
 {id:22,cat:'佳句填空',src:'《論語》',q:'「＿＿」，德之賊也。',a:'鄉愿',note:'鄉愿＝表面忠厚實際隨俗媚眾之人；德之賊＝道德的破壞者',yr:'114'},
 {id:23,cat:'佳句填空',src:'《詩經·桃夭》',q:'桃之「＿＿」，灼灼其華。',a:'夭夭',note:'夭夭＝茂盛嫩美貌；桃夭篇用桃花比喻出嫁新娘',yr:'114'},
@@ -131,7 +183,6 @@ const Q=[
 {id:28,cat:'佳句填空',src:'范仲淹《岳陽樓記》',q:'不以物喜，「＿＿」。',a:'不以己悲',note:'不因外物好壞或自身得失而喜悲，是古仁人的境界',yr:'114'},
 {id:29,cat:'佳句填空',src:'李煜〈虞美人〉',q:'雕欄玉砌應猶在，只是「＿＿」改。',a:'朱顏',note:'朱顏＝紅潤臉色；此指昔日南唐的美好時光已逝',yr:'114'},
 {id:30,cat:'佳句填空',src:'《左傳》鄭伯克段',q:'多行不義，必「＿＿」。',a:'自斃',note:'自斃＝自取滅亡；惡行累積，終必自食其果',yr:'114'},
-// ── 成語填字 108年 ──
 {id:31,cat:'成語填字',src:'108年',q:'摩頂放「＿」—從頭頂磨到腳跟，形容不惜一切',a:'踵',note:'踵＝腳跟；摩頂放踵，利天下為之（《孟子》形容墨子）',yr:'108'},
 {id:32,cat:'成語填字',src:'荀子·勸學',q:'「＿」而不捨，金石可鏤',a:'鍥',note:'鍥＝雕刻；持續不放棄，連金石也能刻穿',yr:'108'},
 {id:33,cat:'成語填字',src:'108年',q:'美輪美「＿」—形容建築宏偉華麗',a:'奐',note:'奐＝光明盛大；美輪美奐出自《禮記·檀弓》',yr:'108'},
@@ -142,7 +193,6 @@ const Q=[
 {id:38,cat:'成語填字',src:'108年',q:'民不「＿」生—百姓無法維持生計',a:'聊',note:'聊＝賴以依靠；民無所賴以維生',yr:'108'},
 {id:39,cat:'成語填字',src:'108年',q:'「＿」否人物—評論人物優劣',a:'臧',note:'臧＝善好；臧否＝評論好壞（臧好否壞）',yr:'108'},
 {id:40,cat:'成語填字',src:'韓愈《進學解》',q:'業精於勤，荒於嬉；行成於思，毀於「＿」。',a:'隨',note:'隨＝隨便放縱；事業因放縱散漫而敗壞',yr:'108'},
-// ── 成語填空 109年 ──
 {id:41,cat:'成語填字',src:'109年',q:'「＿＿」氣揚—形容人驕傲自大',a:'趾高',note:'趾高氣揚＝腳抬高、神氣十足，形容驕傲自大的樣子',yr:'109'},
 {id:42,cat:'成語填字',src:'《孟子》',q:'野有餓「＿」—野地有餓死之人',a:'殍',note:'殍（piǎo）＝餓死的人；孟子：野有餓殍而不知發',yr:'109'},
 {id:43,cat:'成語填字',src:'109年',q:'「＿＿」附勢—奉承依附有權有勢的人',a:'趨炎',note:'趨炎＝趨向炎熱（權貴）；趨炎附勢，求名逐利',yr:'109'},
@@ -152,7 +202,6 @@ const Q=[
 {id:47,cat:'成語填字',src:'《論語·里仁》',q:'君子無終食之間違仁，「＿＿」必於是，顛沛必於是。',a:'造次',note:'造次＝倉促緊迫之時；即使最倉皇時刻也不違背仁德',yr:'109'},
 {id:48,cat:'成語填字',src:'劉禹錫〈烏衣巷〉',q:'舊時王謝堂前燕，飛入「＿＿」百姓家。',a:'尋常',note:'尋常＝普通平常；昔日豪門大院如今成普通人家',yr:'109'},
 {id:49,cat:'成語填字',src:'《禮記·中庸》',q:'好學近乎知，力行近乎仁，「＿＿」近乎勇。',a:'知恥',note:'知恥＝知道羞恥；知恥是勇氣的根本來源',yr:'109'},
-// ── 改錯字 ──
 {id:50,cat:'改錯字',src:'109/113常考',q:'提綱「切」領 → 正確字？（提起要點之意）',a:'挈',note:'挈（qiè）＝提起；提綱挈領＝抓住要點，切→挈',yr:'109'},
 {id:51,cat:'改錯字',src:'109年',q:'因「漏」就簡 → 正確字？（簡陋之意）',a:'陋',note:'陋＝簡陋；因陋就簡＝利用簡陋條件辦事，漏→陋',yr:'109'},
 {id:52,cat:'改錯字',src:'109年',q:'以身作「責」 → 正確字？（榜樣法則之意）',a:'則',note:'則＝法則榜樣；以身作則＝以自己言行作示範，責→則',yr:'109'},
@@ -163,24 +212,22 @@ const Q=[
 {id:57,cat:'改錯字',src:'113年《蘭亭集序》',q:'未嘗不「蹋」文嗟悼 → 正確字？（面對之意）',a:'臨',note:'臨＝面對；臨文嗟悼＝閱讀到此文時感嘆悲悼，蹋→臨',yr:'113'},
 {id:58,cat:'改錯字',src:'113年《桃花源記》',q:'初極狹，「繪」通人 → 正確字？（僅僅之意）',a:'才',note:'才＝僅僅；才通人＝僅能一人通過，繪→才',yr:'113'},
 {id:59,cat:'改錯字',src:'113年《桃花源記》',q:'有良田、美「竹」、桑、竹之屬 → 正確字？（水邊之意）',a:'池',note:'池＝水池；原文「有良田美池桑竹之屬」，竹→池',yr:'113'},
-{id:60,cat:'改錯字',src:'109年',q:'設交距離 → 正確字？（社會交際之意）',a:'社',note:'社交距離；設→社。109年新冠疫情相關句子中的改錯字',yr:'109'},
-// ── 諸子百家 ──
+{id:60,cat:'改錯字',src:'109年',q:'「設」交距離 → 正確字？（社會交際之意）',a:'社',note:'社交距離；設→社。109年新冠疫情相關句子中的改錯字',yr:'109'},
 {id:61,cat:'諸子百家',src:'108年陷阱題',q:'「天地不仁，以萬物為芻狗；聖人不仁，以百姓為芻狗。」——這句話出自哪位思想家？',a:'老子（《道德經》）',note:'108年考試陷阱：此句被掛在韓非名下作為錯誤選項。天地和聖人對萬物一視同仁，無偏私，是老子的思想',yr:'108'},
 {id:62,cat:'諸子百家',src:'108年',q:'「天行有常，不為堯存，不為桀亡。應之以治則吉，應之以亂則凶。」——出自哪位思想家？',a:'荀子（《天論》）',note:'荀子主張天道自然有其規律，不因人而改變；人應順應天道，發揮主動性「制天命而用之」',yr:'108'},
-{id:63,cat:'諸子百家',src:'108年',q:'「天之意不欲大國之攻小國也，大家之亂小家也，強之暴寡，詐之謀愚。」——出自哪位思想家？',a:'墨子（天志篇）',note:'墨子的兼愛非攻思想：天的意志反對強凌弱、大欺小。此為108年Q7選項B',yr:'108'},
+{id:63,cat:'諸子百家',src:'108年',q:'「天之意不欲大國之攻小國也，大家之亂小家也，強之暴寡，詐之謀愚。」——出自哪位思想家？',a:'墨子（天志篇）',note:'墨子的兼愛非攻思想：天的意志反對強凌弱、大欺小。此為108年Q7選項',yr:'108'},
 {id:64,cat:'諸子百家',src:'108年',q:'「不怨天，不尤人；下學而上達。知我者其天乎！」——出自哪位思想家？',a:'孔子（《論語·憲問》）',note:'孔子表達不抱怨天命、不責怪他人，從基礎學起向上通達的自修精神',yr:'108'},
 {id:65,cat:'諸子百家',src:'109年',q:'「人之生也柔弱，其死也堅強。萬物草木之生也柔脆，其死也枯槁。」——體現哪位思想家哪個核心主張？',a:'老子；柔弱勝剛強（守柔處弱）',note:'老子認為柔弱是生機，剛強是死亡的象徵；水善利萬物而不爭，體現道家守柔思想',yr:'109'},
 {id:66,cat:'諸子百家',src:'109年',q:'「江海所以能為百谷王者，以其善下，故能為百谷王。」——體現哪位思想家哪個主張？',a:'老子；謙遜處下（守柔）',note:'老子以江海善處低下比喻聖人謙遜，故能成就大業；道家「曲則全」的思想',yr:'109'},
 {id:67,cat:'諸子百家',src:'112年',q:'「莊周夢為胡蝶……此之謂物化。」出自哪位思想家哪篇著作？表達什麼思想？',a:'莊子《莊子·齊物論》；萬物同一（齊物），物我界限消融',note:'莊周夢蝴蝶：不知是周夢蝴蝶還是蝴蝶夢周，體現莊子「齊物」、萬物平等的哲學',yr:'112'},
 {id:68,cat:'諸子百家',src:'109年',q:'儒家「序君臣、父子之禮，列夫婦、長幼之別，不可易也」——代表人物是誰？核心概念是？',a:'孔子（仁）、孟子（義）、荀子（禮）；重視人倫秩序',note:'儒家重五倫：君臣、父子、夫婦、兄弟、朋友；仁義禮智信是核心',yr:'109'},
 {id:69,cat:'諸子百家',src:'109年',q:'墨家「儉而難遵……然其疆本節用不可廢也」——墨家有哪些核心主張？',a:'兼愛、非攻、節用、節葬、尚賢、尚同',note:'墨家主張節儉，反對浪費；兼愛是無差等地愛所有人，與儒家有差等的仁愛不同',yr:'109'},
-{id:70,cat:'諸子百家',src:'109年',q:'兼愛（墨家）vs 仁愛（儒家）——最大的差別是什麼？',a:'墨家兼愛：無差等，愛所有人一視同仁；儒家仁愛：有差等，由親親推及仁民再愛物',note:'儒家批墨子兼愛「無父」；墨家批儒家愛有等差，流於虛偽。是儒墨之爭的核心議題',yr:'常考'},
+{id:70,cat:'諸子百家',src:'常考',q:'兼愛（墨家）vs 仁愛（儒家）——最大的差別是什麼？',a:'墨家兼愛：無差等，愛所有人一視同仁；儒家仁愛：有差等，由親親推及仁民再愛物',note:'儒家批墨子兼愛「無父」；墨家批儒家愛有等差，流於虛偽。是儒墨之爭的核心議題',yr:'常考'},
 {id:71,cat:'諸子百家',src:'常考',q:'「道可道，非常道；名可名，非常名。」出自哪位思想家？',a:'老子（《道德經》第一章）',note:'老子認為可以言說的道不是永恒的道；道是超越言語的最高原則',yr:'常考'},
 {id:72,cat:'諸子百家',src:'常考',q:'「己所不欲，勿施於人」——出自哪位思想家？體現哪種倫理原則？',a:'孔子（《論語·衛靈公》）；恕道（推己及人）',note:'恕道是儒家仁的具體實踐：自己不想要的，不要強加給別人',yr:'常考'},
 {id:73,cat:'諸子百家',src:'常考',q:'「生於憂患，死於安樂」——出自哪位思想家哪篇著作？',a:'孟子（《孟子·告子下》）',note:'孟子主張憂患意識：逆境磨練人，安樂反而使人走向衰亡；故天將降大任於斯人也……',yr:'常考'},
-{id:74,cat:'諸子百家',src:'常考',q:'名家「嚴而少恩；然其正君臣上下之分，不可改矣」——代表人物是誰？核心關注是什麼？',a:'公孫龍、惠施；名實關係（正名）',note:'名家注重名與實的對應，如「白馬非馬」；過於嚴苛，但對名份秩序有貢獻',yr:'109'},
-{id:75,cat:'諸子百家',src:'常考',q:'陰陽家「大祥而眾忌諱，使人拘而多所畏」——代表人物是誰？',a:'鄒衍',note:'陰陽家以陰陽五行解釋自然與社會，但流於迷信禁忌，使人過度拘束',yr:'109'},
-// ── 成語典故 ──
+{id:74,cat:'諸子百家',src:'109年',q:'名家「嚴而少恩；然其正君臣上下之分，不可改矣」——代表人物是誰？核心關注是什麼？',a:'公孫龍、惠施；名實關係（正名）',note:'名家注重名與實的對應，如「白馬非馬」；過於嚴苛，但對名份秩序有貢獻',yr:'109'},
+{id:75,cat:'諸子百家',src:'109年',q:'陰陽家「大祥而眾忌諱，使人拘而多所畏」——代表人物是誰？',a:'鄒衍',note:'陰陽家以陰陽五行解釋自然與社會，但流於迷信禁忌，使人過度拘束',yr:'109'},
 {id:76,cat:'成語典故',src:'108年陷阱',q:'「三省吾身」（吾日三省吾身：為人謀而不忠乎…）——是誰說的？',a:'曾子（非孔子）',note:'《論語·學而》：曾子每天自省三事。常見陷阱：很多人以為是孔子說的',yr:'108'},
 {id:77,cat:'成語典故',src:'108年陷阱',q:'「作法自斃」的主角是誰？',a:'商鞅（非韓非子）',note:'商鞅為秦國制定嚴刑峻法，後被秦惠王以謀反罪名車裂。以自己的法律懲罰了自己',yr:'108'},
 {id:78,cat:'成語典故',src:'108年陷阱',q:'「金屋藏嬌」——「若得阿嬌作婦，當作金屋貯之」是誰的典故？',a:'漢武帝劉徹（非唐太宗）',note:'劉徹年幼時對館陶公主之女陳阿嬌所說，後真娶阿嬌為皇后',yr:'108'},
@@ -188,36 +235,34 @@ const Q=[
 {id:80,cat:'成語典故',src:'常考',q:'「破釜沉舟」——是誰做的？在哪場戰役？',a:'項羽；鉅鹿之戰',note:'渡河後命令砸破鍋釜、鑿沉船隻，只帶三日糧食，表示決死作戰，一舉擊敗秦軍',yr:'常考'},
 {id:81,cat:'成語典故',src:'常考',q:'「臥薪嘗膽」——主角是誰？',a:'越王勾踐',note:'吳越爭霸，勾踐戰敗後臥柴薪、嘗苦膽以不忘恥辱，終於復仇滅吳',yr:'常考'},
 {id:82,cat:'成語典故',src:'常考',q:'「紙上談兵」——主角是誰？在哪場戰役慘敗？',a:'趙括；長平之戰',note:'趙括熟讀兵書但無實戰經驗，接替廉頗後改守為攻，被白起大敗，趙軍四十萬被坑殺',yr:'常考'},
-{id:83,cat:'成語典故',src:'常考',q:'「負荊請罪」——廉頗向誰請罪？為什麼？',a:'藺相如；為了向藺相如道歉，表達誠意',note:'廉頗嫉妒藺相如位高，常故意刁難。後得知藺相如以大局為重，主動背負荊條請罪，兩人成刎頸之交',yr:'常考'},
+{id:83,cat:'成語典故',src:'常考',q:'「負荊請罪」——廉頗向誰請罪？為什麼？',a:'藺相如；為了道歉，表達誠意',note:'廉頗嫉妒藺相如位高，常故意刁難。後得知藺相如以大局為重，主動背負荊條請罪，兩人成刎頸之交',yr:'常考'},
 {id:84,cat:'成語典故',src:'常考',q:'「指鹿為馬」——主角是誰？',a:'趙高（秦朝宦官）',note:'趙高把鹿帶到朝廷說是馬，試探哪些大臣聽話，不從者日後遭受迫害',yr:'常考'},
 {id:85,cat:'成語典故',src:'常考',q:'「鑿壁借光」——主角是誰？',a:'匡衡（西漢）',note:'匡衡家貧無油燈，將牆壁鑿洞借鄰居燈光讀書，後成為大學者',yr:'常考'},
 {id:86,cat:'成語典故',src:'常考',q:'「懸梁刺股」——懸梁對應誰？刺股對應誰？',a:'孫敬（懸梁）、蘇秦（刺股）',note:'孫敬以繩繫頭髮懸於梁上防打瞌睡；蘇秦以錐刺大腿提神讀書',yr:'常考'},
 {id:87,cat:'成語典故',src:'常考',q:'「望梅止渴」——主角是誰？',a:'曹操',note:'行軍無水，曹操謊稱前方有梅林，士兵想到酸梅流涎解渴，此比喻以虛幻安慰',yr:'常考'},
 {id:88,cat:'成語典故',src:'常考',q:'「樂不思蜀」——主角是誰？這句話是在何情況下說的？',a:'劉禪（蜀漢後主）；蜀漢滅亡後被帶至洛陽，司馬昭問是否思念蜀地',note:'劉禪回答「此間樂，不思蜀」，後比喻安於現狀、忘記故土或本分',yr:'常考'},
-{id:89,cat:'成語典故',src:'常考',q:'「高山流水」——伯牙的知音是誰？子期死後伯牙做了什麼？',a:'鍾子期；伯牙摔琴不再彈',note:'伯牙善琴，志在高山時子期說「巍巍乎若泰山」，志在流水時說「洋洋乎若江河」。子期死後，伯牙認為天下再無知音',yr:'常考'},
+{id:89,cat:'成語典故',src:'常考',q:'「高山流水」——伯牙的知音是誰？子期死後伯牙做了什麼？',a:'鍾子期；伯牙摔琴不再彈',note:'伯牙善琴，志在高山時子期說「巍巍乎若泰山」，志在流水時說「洋洋乎若江河」。子期死後，天下再無知音',yr:'常考'},
 {id:90,cat:'成語典故',src:'常考',q:'「完璧歸趙」——主角是誰？「璧」指哪件寶物？',a:'藺相如；和氏璧',note:'趙惠文王得和氏璧，秦昭王以十五城換取，藺相如奉命出使，完好帶回，未讓秦國得逞',yr:'常考'},
 {id:91,cat:'成語典故',src:'112年',q:'《幼學瓊林》：「□□與景帝論婚，欲將金屋貯嬌；章固與□□論婚，始知赤繩繫足。」前後兩空分別填什麼？',a:'前：漢武（帝）；後：月老',note:'前=金屋藏嬌典故（漢武帝幼年語）；後=月老以紅繩繫姻緣的典故',yr:'112'},
 {id:92,cat:'成語典故',src:'常考',q:'「囊螢映雪」——囊螢對應誰？映雪對應誰？',a:'車胤（囊螢）、孫康（映雪）',note:'車胤以薄紗囊盛螢火蟲照明讀書；孫康於雪地中借雪光讀書。兩人後皆成名臣',yr:'常考'},
 {id:93,cat:'成語典故',src:'常考',q:'「一字千金」——出自哪部著作？由誰主持編寫？',a:'《呂氏春秋》；呂不韋',note:'呂不韋令門客編《呂氏春秋》，懸於咸陽城門，聲稱能增刪一字者賞千金',yr:'常考'},
 {id:94,cat:'成語典故',src:'常考',q:'「三顧茅廬」——劉備三次拜訪的是誰？在哪裡？',a:'諸葛亮（孔明）；隆中（今湖北）',note:'劉備三顧諸葛亮茅廬，誠請出山輔助，為《出師表》中重要典故「很自枉屈，三顧臣於草廬之中」',yr:'常考'},
 {id:95,cat:'成語典故',src:'常考',q:'「桃李不言，下自成蹊」——出自哪位將領的傳記？這句話什麼意思？',a:'李廣（飛將軍）；比喻有德行的人雖不張揚，自然能感召他人',note:'《史記·李將軍列傳》：桃李樹不說話，樹下自然踩出小路；讚美李廣德行感召四方',yr:'常考'},
-// ── 詩詞文學 ──
-{id:96,cat:'詩詞文學',src:'109年',q:'四大奇書——作者分別是誰？',a:'水滸傳：施耐庵；西遊記：吳承恩；三國演義：羅貫中；金瓶梅：蘭陵笑笑生',note:'明代馮夢龍提出「四大奇書」；西遊記一般認為吳承恩，三國演義羅貫中',yr:'109'},
+{id:96,cat:'詩詞文學',src:'109年',q:'四大奇書——作者分別是誰？',a:'水滸傳：施耐庵；西遊記：吳承恩；三國演義：羅貫中；金瓶梅：蘭陵笑笑生',note:'明代馮夢龍提出「四大奇書」；《三國演義》是文學加工，非完全依照歷史事實',yr:'109'},
 {id:97,cat:'詩詞文學',src:'108年',q:'林文月的散文風格特點是什麼？代表作有哪些？',a:'溫雅醇厚、委婉淡遠；《飲膳札記》《京都一年》，翻譯《源氏物語》',note:'林文月是台大中文系教授，散文細膩溫婉有書卷氣，同時是日本文學翻譯家',yr:'108'},
-{id:98,cat:'詩詞文學',src:'109年',q:'「倚南窗以寄傲，審容膝之易安。園日涉以成趣，門雖設而常關」——這段文字是誰的作品？出自哪篇？',a:'陶淵明（陶潛）；《歸去來辭》',note:'描寫陶淵明辭官歸隱後的閒適田園生活；容膝＝小小的居所',yr:'109'},
-{id:99,cat:'詩詞文學',src:'109年',q:'〈蒹葭〉中「蒹葭蒼蒼，白露為霜；所謂伊人，在水一方」——體現什麼情感？',a:'思慕意中人，卻可望而不可及的惆悵',note:'蒹葭為《詩經·秦風》，以秋景起興，「伊人」在對岸，追尋而不可得；體現朦朧的思慕之情',yr:'109'},
+{id:98,cat:'詩詞文學',src:'109年',q:'「倚南窗以寄傲，審容膝之易安。園日涉以成趣，門雖設而常關」——這段文字是誰的作品？',a:'陶淵明（陶潛）；《歸去來辭》',note:'描寫陶淵明辭官歸隱後的閒適田園生活；容膝＝小小的居所',yr:'109'},
+{id:99,cat:'詩詞文學',src:'109年',q:'〈蒹葭〉「蒹葭蒼蒼，白露為霜；所謂伊人，在水一方」——體現什麼情感？',a:'思慕意中人，卻可望而不可及的惆悵',note:'蒹葭為《詩經·秦風》，以秋景起興，「伊人」在對岸，追尋而不可得；體現朦朧的思慕之情',yr:'109'},
 {id:100,cat:'詩詞文學',src:'111年',q:'「小荷才露尖尖角，早有蜻蜓立上頭」——描寫哪個季節？出自誰的詩？',a:'夏（初夏）；楊萬里',note:'楊萬里〈小池〉，以荷葉初露、蜻蜓停駐描繪初夏景象',yr:'111'},
 {id:101,cat:'詩詞文學',src:'111年',q:'「碧玉妝成一樹高，萬條垂下綠絲絛」——描寫哪個季節？出自誰的詩？',a:'春（早春）；賀知章',note:'賀知章〈詠柳〉，以碧玉和綠絲帶比喻早春柳樹，後句「不知細葉誰裁出，二月春風似剪刀」',yr:'111'},
-{id:102,cat:'詩詞文學',src:'113年',q:'「金風玉露一相逢，便勝卻人間無數」——金風玉露指哪個季節？',a:'秋（七夕）',note:'秦觀〈鵲橋仙〉，金風＝秋風，玉露＝秋露；描寫牛郎織女秋日相逢，雖只一夜也勝過人間長相廝守',yr:'113'},
-{id:103,cat:'詩詞文學',src:'113年',q:'「草長鶯飛二月天，拂堤楊柳醉春煙」——描寫哪個季節？',a:'春（農曆二月，早春）',note:'高鼎〈村居〉，草長鶯飛是春天典型景象；後兩句描寫兒童放風箏',yr:'113'},
-{id:104,cat:'詩詞文學',src:'113年',q:'「橙黃橘綠時」——指哪個季節？',a:'秋冬之際（深秋/初冬）',note:'蘇軾〈贈劉景文〉：「一年好景君須記，最是橙黃橘綠時」，橙子橘子成熟在秋冬',yr:'113'},
+{id:102,cat:'詩詞文學',src:'113年',q:'「金風玉露一相逢，便勝卻人間無數」——金風玉露指哪個季節？出自哪首詞？',a:'秋（七夕）；秦觀〈鵲橋仙〉',note:'金風＝秋風，玉露＝秋露；描寫牛郎織女秋日相逢，雖只一夜也勝過人間長相廝守',yr:'113'},
+{id:103,cat:'詩詞文學',src:'113年',q:'「草長鶯飛二月天，拂堤楊柳醉春煙」——描寫哪個季節？出自誰的詩？',a:'春（農曆二月）；高鼎〈村居〉',note:'草長鶯飛是春天典型景象；後兩句描寫兒童放風箏',yr:'113'},
+{id:104,cat:'詩詞文學',src:'113年',q:'「一年好景君須記，最是橙黃橘綠時」——指哪個季節？',a:'秋冬之際（深秋/初冬）；蘇軾〈贈劉景文〉',note:'橙子橘子成熟在秋冬；全詩勉勵友人不要在乎「荷盡菊殘」，最美景色在橙黃橘綠時',yr:'113'},
 {id:105,cat:'詩詞文學',src:'常考',q:'唐宋八大家中屬唐代的是誰？屬宋代的是誰？',a:'唐：韓愈、柳宗元；宋：歐陽修、蘇洵、蘇軾、蘇轍、曾鞏、王安石',note:'唐宋古文運動的代表人物；韓愈和柳宗元共同提倡「古文運動」反對駢文',yr:'常考'},
-{id:106,cat:'詩詞文學',src:'常考',q:'白居易的詩風特色是什麼？「老嫗能解」典故是怎麼來的？',a:'平易淺近；相傳寫詩後讀給老婦人聽，聽不懂就修改直到聽懂為止',note:'白居易代表作《琵琶行》《長恨歌》；主張詩歌應諷諭社會，強調語言平易近人',yr:'109'},
-{id:107,cat:'詩詞文學',src:'常考',q:'范仲淹《岳陽樓記》——「先天下之憂而憂，後天下之樂而樂」體現什麼精神？與作者當時處境有何關係？',a:'憂患意識與仁政理想；范仲淹被貶謫時應友人之邀寫此文，寄託自己的政治抱負',note:'古仁人之心：不以物喜，不以己悲；即使身處逆境，仍以天下蒼生為念',yr:'常考'},
+{id:106,cat:'詩詞文學',src:'109年',q:'白居易的詩風特色是什麼？「老嫗能解」典故是怎麼來的？',a:'平易淺近；相傳寫詩後讀給老婦人聽，聽不懂就修改直到聽懂為止',note:'白居易代表作《琵琶行》《長恨歌》；主張詩歌應諷諭社會，強調語言平易近人',yr:'109'},
+{id:107,cat:'詩詞文學',src:'常考',q:'范仲淹《岳陽樓記》——「先天下之憂而憂，後天下之樂而樂」體現什麼精神？',a:'憂患意識與仁政理想；范仲淹被貶謫時寫此文，寄託自己的政治抱負',note:'古仁人之心：不以物喜，不以己悲；即使身處逆境，仍以天下蒼生為念',yr:'常考'},
 {id:108,cat:'詩詞文學',src:'常考',q:'《師說》的中心論點是什麼？',a:'「師者，所以傳道受業解惑也」；以能者為師，不分貴賤老少，道之所存，師之所存',note:'韓愈批評唐代士大夫恥於從師的風氣；提出「聖人無常師」，孔子曾師從多人',yr:'常考'},
 {id:109,cat:'詩詞文學',src:'常考',q:'陶淵明（陶潛）的主要作品有哪些？',a:'《桃花源記》《歸去來辭》《飲酒》（採菊東籬下）《五柳先生傳》',note:'陶淵明是東晉文學家，不為五斗米折腰，歸隱田園；田園詩的代表人物',yr:'常考'},
-{id:110,cat:'詩詞文學',src:'常考',q:'蘇軾的代表作有哪些？他在文學史上有哪些貢獻？',a:'《赤壁賦》（前後）、〈念奴嬌·赤壁懷古〉、〈定風波〉；豪放詞派開創者，詩文書畫皆精',note:'蘇軾（東坡）三次被貶謫，豁達樂觀；與父蘇洵、弟蘇轍並稱「三蘇」',yr:'常考'},
-// ── 字音字形 ──
+{id:110,cat:'詩詞文學',src:'常考',q:'蘇軾的代表作有哪些？',a:'《赤壁賦》（前後）、〈念奴嬌·赤壁懷古〉、〈定風波〉；豪放詞派開創者',note:'蘇軾（東坡）三次被貶謫，豁達樂觀；與父蘇洵、弟蘇轍並稱「三蘇」',yr:'常考'},
 {id:111,cat:'字音字形',src:'109年',q:'「罄竹難書」——罄的字音？字義？常見的錯誤寫法？',a:'罄（qìng）＝用盡；常錯寫成「聲竹難書」（聲→罄）',note:'罄竹難書＝砍光竹子也寫不完，形容惡行極多；罄＝竭盡',yr:'109'},
 {id:112,cat:'字音字形',src:'109年',q:'「焚膏繼晷」——晷的字音？字義？常見的錯誤寫法？',a:'晷（guǐ）＝日影（日晷是古代計時器）；常錯寫成「繼勁」（晷→勁）',note:'焚膏繼晷＝點油燈繼接日影，形容通宵苦讀；晷字從日，與「鬼」同音',yr:'109'},
 {id:113,cat:'字音字形',src:'109年',q:'「功虧一簣」——簣的字音？字義？常見的錯誤寫法？',a:'簣（kuì）＝盛土的竹筐；常錯寫成「功虧一潰」（簣→潰）',note:'功虧一簣＝只差最後一筐土沒倒成山，比喻差最後一步功敗垂成；出自《尚書》',yr:'109'},
@@ -228,14 +273,133 @@ const Q=[
 {id:118,cat:'字音字形',src:'109年',q:'「殍」（野有餓殍）——字音？字義？',a:'殍（piǎo）＝餓死的人',note:'殍字從「死」旁，提示與死亡有關；出自《孟子》；野有餓殍＝野外有餓死倒斃的人，形容民不聊生',yr:'109'},
 ];
 
+// ── CATEGORIES ──
 const CATS=['全部','佳句填空','成語填字','改錯字','諸子百家','成語典故','詩詞文學','字音字形'];
 const BCLS={'佳句填空':'b1','成語填字':'b2','改錯字':'b3','諸子百家':'b4','成語典故':'b5','詩詞文學':'b6','字音字形':'b7'};
 const KEY='poli-ch-v3';
 
 let filtered=[...Q],idx=0,shown=false,mastered={},curCat='全部',resetStep=0;
-
 document.getElementById('totalCount').textContent=Q.length;
 
+// ── ERRATA PANEL HTML ──
+function errCard(wrong,right,phone,word,def){
+  return`<div class="err-card"><div class="err-top"><span class="err-wrong">${wrong}</span><span class="err-arr">→</span><span class="err-right">${right}</span></div><div class="err-phone">${phone}</div><div class="err-word">${word}</div><div class="err-def">${def}</div></div>`;
+}
+const ERRATA_HTML=`
+<div class="sh-sect">成語易錯字（填字題常考）</div>
+<div class="err-grid">
+${errCard('切','挈','qiè 提起','提綱挈領','挈≠契(qì符契)，≠鍥(qiè雕刻)')}
+${errCard('潰','簣','kuì 盛土竹筐','功虧一簣','差最後一筐土，出自《尚書》')}
+${errCard('聲','罄','qìng 用盡','罄竹難書','砍光竹子也寫不完')}
+${errCard('勁','晷','guǐ 日影','焚膏繼晷','晷與「鬼」同音，從日旁')}
+${errCard('漏','陋','lòu 簡陋','因陋就簡','利用簡陋條件辦事')}
+${errCard('責','則','zé 法則','以身作則','以自己言行作示範')}
+${errCard('煥','奐','huàn 盛大','美輪美奐','亦常錯寫「美倫美奐」（輪→倫）')}
+${errCard('宴','晏','yàn 平靜','河清海晏','晏子之晏，晏＝晴朗平靜')}
+${errCard('fǒu','pǐ','pǐ 壞惡','臧否人物','否在此讀pǐ，臧(zāng)＝善')}
+${errCard('—','殍','piǎo 餓死','野有餓殍','殍從死旁，提示與死亡有關')}
+${errCard('—','踵','zhǒng 腳跟','摩頂放踵','從頭頂到腳跟，形容不惜一切')}
+</div>
+<div class="sh-sect">古文原典易錯字（改錯字題常考）</div>
+<div class="err-grid">
+${errCard('今','合','hé 符合','若合一契','若合一契出自蘭亭集序')}
+${errCard('蹋','臨','lín 面對','臨文嗟悼','臨文＝閱讀文章時，蘭亭集序')}
+${errCard('繪','才','cái 僅僅','才通人','才通人＝僅能一人通過，桃花源記')}
+${errCard('竹','池','chí 水池','美池','有良田美池桑竹之屬，桃花源記')}
+${errCard('設','社','shè 社會','社交距離','109年疫情相關句子')}
+</div>`;
+
+// ── TEXTS PANEL HTML ──
+function txItem(tier,tierCls,name,author,sentences){
+  const sHTML=sentences.map(([s,n])=>`<div class="tx-sent">${s}</div>${n?`<div class="tx-note">${n}</div>`:''}`).join('');
+  return`<div class="tx-item"><div class="tx-hdr"><span class="tx-tier ${tierCls}">${tier}</span><span class="tx-name">${name}</span><span class="tx-author">${author}</span></div><div class="tx-sents">${sHTML}</div></div>`;
+}
+const TEXTS_HTML=`
+<div class="sh-sect">🔴 必背（出現2題以上）</div>
+${txItem('必','tx-must','《論語》','孔子/曾子',[
+  ['巧言<mark>令</mark>色，鮮矣仁。','令色＝諂媚臉色'],
+  ['學而不思則罔，思而不學則<mark>殆</mark>。','殆＝危害迷惑'],
+  ['君子坦蕩蕩，小人<mark>長戚戚</mark>。','長戚戚＝常感憂愁'],
+  ['<mark>鄉愿</mark>，德之賊也。','鄉愿＝表面忠厚實際媚俗之人'],
+  ['己所不欲，勿施於人。','恕道，推己及人'],
+  ['吾日三省吾身……（曾子語）','注意：三省吾身是曾子，不是孔子！'],
+])}
+${txItem('必','tx-must','《出師表》','諸葛亮',[
+  ['不宜妄自<mark>菲薄</mark>，引喻失義，以塞忠諫之路也。','菲薄＝輕視，妄自菲薄＝不當貶低自己'],
+  ['若有作奸<mark>犯科</mark>及為忠善者，宜付有司，論其刑賞。','犯科＝觸犯法令'],
+  ['很自枉屈，三顧臣於草<mark>廬</mark>之中。','草廬＝茅草屋'],
+])}
+${txItem('必','tx-must','《師說》','韓愈',[
+  ['句<mark>讀</mark>之不知，惑之不解，或師焉，或不焉。','句讀＝文章斷句'],
+  ['聞道有先後，<mark>術業</mark>有專攻。','術業有專攻＝各有各的專長'],
+])}
+${txItem('必','tx-must','《桃花源記》','陶淵明',[
+  ['復行數十步，<mark>豁然</mark>開朗，土地平曠，屋舍儼然。','豁然＝開闊貌'],
+  ['不足為<mark>外人</mark>道也。','外人＝外面的人'],
+  ['初極狹，<mark>才</mark>通人。（才≠繪）','才＝僅僅，改錯字考點'],
+  ['有良田美<mark>池</mark>桑竹之屬。（池≠竹）','美池，改錯字考點'],
+])}
+${txItem('必','tx-must','《赤壁賦》','蘇軾',[
+  ['蘇子愀然，正襟<mark>危坐</mark>，而問客曰。','危坐＝端正挺直地坐'],
+  ['客喜而笑……肴核既盡，杯盤<mark>狼籍</mark>。','狼籍＝零亂散佈'],
+])}
+${txItem('必','tx-must','《醉翁亭記》','歐陽修',[
+  ['<mark>醉翁</mark>之意不在酒，在乎山水之間也。','醉翁＝歐陽修自號'],
+  ['野芳發而幽香……水落而<mark>石出</mark>者。','水落石出＝比喻真相大白'],
+])}
+<div class="sh-sect">🟡 高頻（重點文本）</div>
+${txItem('高','tx-hi','《孟子》','孟子',[
+  ['學問之道無他，求其<mark>放</mark>心而已矣。','放心＝失去的本心'],
+  ['食<mark>色</mark>，性也。（告子語）','食慾與性慾是天生本性'],
+])}
+${txItem('高','tx-hi','《詩經》','各篇',[
+  ['窈窕淑女，君子好<mark>逑</mark>。（關雎）','逑＝配偶'],
+  ['桃之<mark>夭夭</mark>，灼灼其華。（桃夭）','夭夭＝茂盛嫩美'],
+  ['死生<mark>契闊</mark>，與子成說。（擊鼓）','契闊＝聚散悲歡'],
+])}
+${txItem('高','tx-hi','《蘭亭集序》','王羲之',[
+  ['是日也，天朗氣清，<mark>惠風</mark>和暢。','惠風＝和暖春風'],
+  ['若<mark>合</mark>一契，<mark>臨</mark>文嗟悼。（合≠今，臨≠蹋）','兩個改錯字考點'],
+])}
+${txItem('高','tx-hi','《左傳》','各篇',[
+  ['若舍鄭以為東<mark>道主</mark>……（燭之武退秦師）','東道主＝東方道路上的主人'],
+  ['多行不義，必<mark>自斃</mark>。（鄭伯克段）','自斃＝自取滅亡'],
+])}
+<div class="sh-sect">🟢 中頻（各考一次）</div>
+${txItem('中','tx-med','《岳陽樓記》','范仲淹',[
+  ['不以物喜，<mark>不以己悲</mark>。','不因外物或自身得失而喜悲'],
+])}
+${txItem('中','tx-med','〈短歌行〉','曹操',[
+  ['何以解憂？唯有<mark>杜康</mark>。','杜康＝酒的代名詞'],
+])}
+${txItem('中','tx-med','〈虞美人〉','李煜',[
+  ['雕欄玉砌應猶在，只是<mark>朱顏</mark>改。','朱顏＝昔日的美好時光'],
+])}
+${txItem('中','tx-med','杜甫/蘇軾詩詞','兩位',[
+  ['會當<mark>凌</mark>絕頂，一覽眾山小。（杜甫〈望嶽〉）','凌＝登上超越'],
+  ['誰怕，一<mark>蓑</mark>煙雨任平生。（蘇軾〈定風波〉）','蓑＝草製防雨衣'],
+])}
+${txItem('中','tx-med','《楚辭·漁父》','屈原',[
+  ['滄浪之水清兮，可以濯吾<mark>纓</mark>。','纓＝帽帶；濯纓＝潔身自好'],
+])}
+${txItem('中','tx-med','《禮記》/《孟子》','各篇',[
+  ['大道之行也，天下為<mark>公</mark>。（禮記·禮運）','天下是眾人共有的'],
+  ['好學近乎知，力行近乎仁，<mark>知恥</mark>近乎勇。（中庸）','知恥是勇氣的根本'],
+])}`;
+
+// ── PANEL FUNCTIONS ──
+window.openSheet=function(type){
+  document.getElementById('sh-title').textContent=type==='errata'?'📝 易錯字清單':'📚 必背文本關鍵句';
+  document.getElementById('sh-body').innerHTML=type==='errata'?ERRATA_HTML:TEXTS_HTML;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('sheet').classList.add('open');
+};
+window.closeSheet=function(){
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('sheet').classList.remove('open');
+};
+
+// ── QUIZ FUNCTIONS ──
 function load(){try{const r=localStorage.getItem(KEY);if(r)mastered=JSON.parse(r);}catch(e){mastered={};}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(mastered));}catch(e){}}
 
@@ -278,42 +442,33 @@ document.addEventListener('touchend',e=>{
 },{passive:true});
 
 function render(){
-  const total=filtered.length;
   const mast=Q.filter(q=>mastered[q.id]===true).length;
   const retry=Q.filter(q=>mastered[q.id]===false).length;
   const un=Q.length-mast-retry;
-  const pct=Math.round(mast/Q.length*100);
-
   document.getElementById('stats').innerHTML=`
     <div class="stat g"><div class="stat-n">${mast}</div><div class="stat-l">已掌握</div></div>
     <div class="stat r"><div class="stat-n">${retry}</div><div class="stat-l">複習中</div></div>
     <div class="stat x"><div class="stat-n">${un}</div><div class="stat-l">未作答</div></div>`;
-  document.getElementById('prog').style.width=pct+'%';
+  document.getElementById('prog').style.width=Math.round(mast/Q.length*100)+'%';
   document.getElementById('filters').innerHTML=CATS.map(c=>{
     const n=c==='全部'?Q.length:Q.filter(q=>q.cat===c).length;
     return`<button class="fb${curCat===c?' on':''}" onclick="applyFilter('${c}')">${c}(${n})</button>`;
   }).join('');
-
+  const total=filtered.length;
   if(total===0){
     document.getElementById('sl').className='sl';
     document.getElementById('card').innerHTML='<div class="qcard"><div class="empty">沒有題目</div></div>';
     document.getElementById('ctr').textContent='';return;
   }
-
   const q=filtered[idx],ms=mastered[q.id];
   document.getElementById('sl').className='sl'+(ms===true?' ok':ms===false?' retry':'');
-
   const qHTML=q.q.replace(/＿/g,'<span class="blank">＿</span>');
   const ans=shown
     ?`<div class="aa"><div class="am">答：${q.a}</div><div class="an">${q.note}</div><div class="abtns"><button class="abtn aok" onclick="mark(true)">✓ 記住了</button><button class="abtn aret" onclick="mark(false)">✗ 再複習</button></div></div>`
     :`<button class="sbtn" onclick="reveal()">點此顯示答案</button>`;
-
   document.getElementById('card').innerHTML=`
     <div class="qcard">
-      <div class="cmeta">
-        <div><span class="badge ${BCLS[q.cat]||'b1'}">${q.cat}</span><div class="csrc">${q.src}</div></div>
-        <span class="cyr">${q.yr}年</span>
-      </div>
+      <div class="cmeta"><div><span class="badge ${BCLS[q.cat]||'b1'}">${q.cat}</span><div class="csrc">${q.src}</div></div><span class="cyr">${q.yr}年</span></div>
       <div class="qtext">${qHTML}</div>${ans}
     </div>`;
   document.getElementById('ctr').textContent=`${idx+1} / ${total}`;
