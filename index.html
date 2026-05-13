@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>政大國文複習</title>
+<style>
+:root {
+  --bg:#f5f3ef;--card:#fff;--border:rgba(0,0,0,.09);--text:#1a1a1a;--muted:#888;
+  --green:#1a7a4a;--green-bg:#eaf6ef;--green-bd:#8ecba8;
+  --red:#c0392b;--red-bg:#fdf0ee;--red-bd:#f0a898;
+  --purple:#5b4fcf;--purple-bg:#f0eeff;
+  --amber:#9a6c00;--amber-bg:#fef9e7;
+  --teal:#0d6e6e;--teal-bg:#e6f5f5;
+  --touch:52px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);font-family:'Noto Serif TC',Georgia,'宋體',serif;color:var(--text);min-height:100vh;padding-bottom:env(safe-area-inset-bottom);}
+.app{max-width:600px;margin:0 auto;padding:16px 14px 36px;}
+
+/* Header */
+.header{text-align:center;margin-bottom:16px;}
+.header h1{font-size:17px;font-weight:700;letter-spacing:2px;}
+.header p{font-size:11px;color:var(--muted);margin-top:3px;font-family:sans-serif;}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 6px;text-align:center;}
+.stat-n{font-size:24px;font-weight:700;line-height:1;}
+.stat-l{font-size:11px;color:var(--muted);margin-top:4px;font-family:sans-serif;}
+.stat.g .stat-n{color:var(--green);}
+.stat.r .stat-n{color:var(--red);}
+.stat.x .stat-n{color:#bbb;}
+
+/* Progress */
+.pw{height:5px;background:#e0ddd6;border-radius:3px;margin-bottom:12px;overflow:hidden;}
+.pf{height:100%;background:var(--green);border-radius:3px;transition:width .4s;}
+
+/* Filters */
+.fs{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:12px;}
+.fs::-webkit-scrollbar{display:none;}
+.fi{display:flex;gap:7px;width:max-content;padding:2px 0;font-family:sans-serif;}
+.fb{font-size:12px;padding:7px 14px;border-radius:20px;cursor:pointer;white-space:nowrap;border:1px solid var(--border);background:var(--card);color:var(--muted);min-height:36px;display:flex;align-items:center;}
+.fb.on{background:var(--text);color:#fff;border-color:var(--text);}
+
+/* Badge */
+.badge{display:inline-block;font-size:11px;padding:3px 9px;border-radius:5px;font-weight:600;font-family:sans-serif;}
+.b1{background:var(--purple-bg);color:var(--purple);}
+.b2{background:var(--teal-bg);color:var(--teal);}
+.b3{background:var(--amber-bg);color:var(--amber);}
+
+/* Card */
+.sl{height:4px;border-radius:3px 3px 0 0;background:#e0ddd6;transition:background .3s;}
+.sl.ok{background:var(--green);}
+.sl.retry{background:var(--red);}
+.qcard{background:var(--card);border:1px solid var(--border);border-top:none;border-radius:0 0 14px 14px;padding:18px 16px;}
+.cmeta{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:8px;}
+.csrc{font-size:12px;color:var(--muted);font-family:sans-serif;margin-top:5px;}
+.cyr{font-size:11px;color:#bbb;font-family:sans-serif;white-space:nowrap;}
+.qtext{font-size:18px;line-height:2.2;color:var(--text);margin-bottom:18px;letter-spacing:.5px;word-break:break-all;}
+.blank{color:var(--purple);font-weight:700;border-bottom:2px solid var(--purple);}
+
+/* Show btn */
+.sbtn{width:100%;min-height:var(--touch);padding:14px;border-radius:12px;border:1.5px dashed #ccc;background:transparent;color:var(--muted);cursor:pointer;font-size:15px;font-family:sans-serif;letter-spacing:.5px;display:flex;align-items:center;justify-content:center;}
+
+/* Answer */
+.aa{border-top:1px solid #f0ece4;padding-top:16px;animation:fi .2s ease;}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1}}
+.am{font-size:24px;font-weight:700;color:var(--green);margin-bottom:10px;letter-spacing:1px;}
+.an{font-size:13px;color:#555;line-height:1.7;font-family:sans-serif;background:#fafaf8;border-radius:8px;padding:10px 12px;border-left:3px solid #ddd;}
+.abtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+.abtn{min-height:var(--touch);padding:14px 10px;border-radius:12px;border:1.5px solid;cursor:pointer;font-size:15px;font-weight:600;font-family:sans-serif;letter-spacing:.5px;display:flex;align-items:center;justify-content:center;gap:6px;}
+.aok{background:var(--green-bg);color:var(--green);border-color:var(--green-bd);}
+.aret{background:var(--red-bg);color:var(--red);border-color:var(--red-bd);}
+
+/* Nav */
+.nav{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-family:sans-serif;}
+.nbtn{min-height:var(--touch);min-width:80px;padding:12px 16px;border-radius:10px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:13px;color:var(--text);display:flex;align-items:center;justify-content:center;}
+.nctr{font-size:12px;color:var(--muted);}
+
+/* Tools */
+.tools{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px;font-family:sans-serif;}
+.tbtn{min-height:44px;padding:8px 4px;border-radius:10px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:11px;color:var(--muted);text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;}
+.tbtn.danger{background:var(--red-bg);color:var(--red);border-color:var(--red-bd);}
+
+.swh{text-align:center;font-size:10px;color:#ccc;margin-top:6px;font-family:sans-serif;}
+.empty{text-align:center;padding:3rem 0;color:var(--muted);font-size:14px;font-family:sans-serif;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>政大國文複習</h1>
+    <p>108–114年 佳句 × 成語 × 改錯字 · 共58題</p>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="pw"><div class="pf" id="prog" style="width:0%"></div></div>
+  <div class="fs"><div class="fi" id="filters"></div></div>
+  <div><div class="sl" id="sl"></div><div id="card"></div></div>
+  <div class="nav">
+    <button class="nbtn" onclick="move(-1)">← 上一</button>
+    <span class="nctr" id="ctr"></span>
+    <button class="nbtn" onclick="move(1)">下一 →</button>
+  </div>
+  <div class="swh">左右滑動也可以換題</div>
+  <div class="tools">
+    <button class="tbtn" onclick="shuffle()">🔀<br>隨機</button>
+    <button class="tbtn" onclick="reviewOnly()">📖<br>未掌握</button>
+    <button class="tbtn" id="rb" onclick="handleReset()">↺<br>重置</button>
+  </div>
+</div>
+<script>
+const Q=[
+{id:1,cat:'佳句填空',src:'《論語》',q:'巧言「＿＿」色，鮮矣仁。',a:'令',note:'令色＝諂媚臉色；與仁德相違背',yr:'111'},
+{id:2,cat:'佳句填空',src:'《論語》',q:'學而不思則罔，思而不學則「＿＿」。',a:'殆',note:'殆＝危害迷惑；只空想不學，知識無根基反而危險',yr:'111'},
+{id:3,cat:'佳句填空',src:'《孟子》',q:'學問之道無他，求其「＿＿」心而已矣。',a:'放',note:'放心＝失去的本心；求放心＝找回迷失的善心',yr:'111'},
+{id:4,cat:'佳句填空',src:'《孟子》',q:'食「＿＿」，性也。',a:'色',note:'食慾與性慾是天生本性（告子語，見孟子告子上）',yr:'111'},
+{id:5,cat:'佳句填空',src:'《禮記》',q:'大道之行也，天下為「＿＿」。',a:'公',note:'天下為公＝天下是眾人共有，非一人私有（禮運大同篇）',yr:'111'},
+{id:6,cat:'佳句填空',src:'諸葛亮《出師表》',q:'很自枉屈，三顧臣於草「＿＿」之中。',a:'廬',note:'草廬＝茅草屋；三顧茅廬典故來源',yr:'111'},
+{id:7,cat:'佳句填空',src:'韓愈《師說》',q:'句「＿＿」之不知，惑之不解，或師焉，或不焉。',a:'讀',note:'句讀＝文章的斷句；知句讀而不能解惑，邏輯矛盾',yr:'111'},
+{id:8,cat:'佳句填空',src:'《詩經·關雎》',q:'窈窕淑女，君子好「＿＿」。',a:'逑',note:'逑＝配偶；好逑＝理想的伴侶（詩經第一篇）',yr:'111'},
+{id:9,cat:'佳句填空',src:'杜甫〈望嶽〉',q:'會當「＿＿」絕頂，一覽眾山小。',a:'凌',note:'凌＝登上超越；表達登頂俯瞰的豪情壯志',yr:'111'},
+{id:10,cat:'佳句填空',src:'蘇軾〈定風波〉',q:'誰怕，一「＿＿」煙雨任平生。',a:'蓑',note:'蓑＝草製防雨衣；一蓑煙雨＝披蓑任憑風雨，豁達態度',yr:'111'},
+{id:11,cat:'佳句填空',src:'諸葛亮《出師表》',q:'不宜妄自「＿＿」，引喻失義，以塞忠諫之路也。',a:'菲薄',note:'菲薄＝輕視；妄自菲薄＝不當地貶低自己，有礙納諫',yr:'112'},
+{id:12,cat:'佳句填空',src:'諸葛亮《出師表》',q:'若有作奸「＿＿」及為忠善者，宜付有司，論其刑賞。',a:'犯科',note:'犯科＝觸犯法令；作奸犯科＝做壞事違法',yr:'112'},
+{id:13,cat:'佳句填空',src:'陶淵明《桃花源記》',q:'復行數十步，「＿＿」開朗，土地平曠，屋舍儼然。',a:'豁然',note:'豁然＝開闊貌；豁然開朗（後引申為突然明白道理）',yr:'112'},
+{id:14,cat:'佳句填空',src:'陶淵明《桃花源記》',q:'停數日，辭去，此中人語云：不足為「＿＿」道也。',a:'外人',note:'外人＝外面的人；不足為外人道＝不必告訴外界',yr:'112'},
+{id:15,cat:'佳句填空',src:'韓愈《師說》',q:'聞道有先後，「＿＿」有專攻。',a:'術業',note:'術業＝學問技藝；術業有專攻＝各有各的專長',yr:'112'},
+{id:16,cat:'佳句填空',src:'蘇軾《赤壁賦》',q:'蘇子愀然，正襟「＿＿」，而問客曰。',a:'危坐',note:'危坐＝端正挺直地坐；危在此＝端正，非危險',yr:'112'},
+{id:17,cat:'佳句填空',src:'蘇軾《赤壁賦》',q:'客喜而笑，洗盞更酌，肴核既盡，杯盤「＿＿」。',a:'狼籍',note:'狼籍＝零亂散佈；形容宴後杯盤凌亂',yr:'112'},
+{id:18,cat:'佳句填空',src:'歐陽修《醉翁亭記》',q:'「＿＿」之意不在酒，在乎山水之間也。',a:'醉翁',note:'醉翁＝歐陽修自號；「醉翁之意不在酒」典故出處',yr:'112'},
+{id:19,cat:'佳句填空',src:'歐陽修《醉翁亭記》',q:'野芳發而幽香，佳木秀而繁陰，風霜高潔，水落而「＿＿」者。',a:'石出',note:'水落石出＝水退後石頭顯現；後比喻事情真相大白',yr:'112'},
+{id:20,cat:'佳句填空',src:'《左傳》燭之武退秦師',q:'若舍鄭以為東「＿＿」，行李之往來，共其乏困，君亦無所害。',a:'道主',note:'東道主＝東方道路上的主人；後泛指接待賓客的一方',yr:'112'},
+{id:21,cat:'佳句填空',src:'《論語》',q:'君子坦蕩蕩，小人「＿＿」。',a:'長戚戚',note:'長戚戚＝常感憂愁、局促不安；與君子坦然形成對比',yr:'114'},
+{id:22,cat:'佳句填空',src:'《論語》',q:'「＿＿」，德之賊也。',a:'鄉愿',note:'鄉愿＝表面忠厚實際隨俗媚眾之人；德之賊＝道德的破壞者',yr:'114'},
+{id:23,cat:'佳句填空',src:'《詩經·桃夭》',q:'桃之「＿＿」，灼灼其華。',a:'夭夭',note:'夭夭＝茂盛嫩美貌；桃夭篇用桃花比喻出嫁新娘',yr:'114'},
+{id:24,cat:'佳句填空',src:'《詩經·擊鼓》',q:'死生「＿＿」，與子成說。',a:'契闊',note:'契闊＝聚散悲歡；與子成說＝與你立下誓言共生死',yr:'114'},
+{id:25,cat:'佳句填空',src:'王羲之《蘭亭集序》',q:'是日也，天朗氣清，「＿＿」和暢。',a:'惠風',note:'惠風＝和暖的春風；惠風和暢＝春風溫和舒暢宜人',yr:'114'},
+{id:26,cat:'佳句填空',src:'《楚辭·漁父》',q:'滄浪之水清兮，可以濯吾「＿＿」。',a:'纓',note:'纓＝帽帶；濯纓＝洗滌帽帶，比喻潔身自好',yr:'114'},
+{id:27,cat:'佳句填空',src:'曹操〈短歌行〉',q:'何以解憂？唯有「＿＿」。',a:'杜康',note:'杜康＝相傳是酒的發明者；此代指酒',yr:'114'},
+{id:28,cat:'佳句填空',src:'范仲淹《岳陽樓記》',q:'不以物喜，「＿＿」。',a:'不以己悲',note:'不因外物好壞或自身得失而喜悲，是古仁人的境界',yr:'114'},
+{id:29,cat:'佳句填空',src:'李煜〈虞美人〉',q:'雕欄玉砌應猶在，只是「＿＿」改。',a:'朱顏',note:'朱顏＝紅潤臉色；此指昔日南唐的美好時光已逝',yr:'114'},
+{id:30,cat:'佳句填空',src:'《左傳》鄭伯克段',q:'多行不義，必「＿＿」。',a:'自斃',note:'自斃＝自取滅亡；惡行累積，終必自食其果',yr:'114'},
+{id:31,cat:'成語填字',src:'108年',q:'摩頂放「＿」—從頭頂磨到腳跟，形容不惜一切',a:'踵',note:'踵＝腳跟；摩頂放踵，利天下為之（《孟子》形容墨子）',yr:'108'},
+{id:32,cat:'成語填字',src:'荀子·勸學',q:'「＿」而不捨，金石可鏤',a:'鍥',note:'鍥＝雕刻；持續不放棄，連金石也能刻穿',yr:'108'},
+{id:33,cat:'成語填字',src:'108年',q:'美輪美「＿」—形容建築宏偉華麗',a:'奐',note:'奐＝光明盛大；美輪美奐出自《禮記·檀弓》',yr:'108'},
+{id:34,cat:'成語填字',src:'108年',q:'「＿」官野史—記錄民間故事的小官',a:'稗',note:'稗＝微小草野；稗官即記錄民間瑣事的小官',yr:'108'},
+{id:35,cat:'成語填字',src:'108年',q:'河清海「＿」—形容天下太平',a:'晏',note:'晏＝平靜晴朗；河清海晏＝天下太平、政治清明',yr:'108'},
+{id:36,cat:'成語填字',src:'108年',q:'「＿」戚與共—喜憂相共',a:'休',note:'休＝喜樂吉慶；與戚（哀愁）相對，共同承擔喜憂',yr:'108'},
+{id:37,cat:'成語填字',src:'108年',q:'正襟「＿」坐—端正而坐',a:'危',note:'危＝端正挺直；危坐＝正身而坐（非危險之意）',yr:'108'},
+{id:38,cat:'成語填字',src:'108年',q:'民不「＿」生—百姓無法維持生計',a:'聊',note:'聊＝賴以依靠；民無所賴以維生',yr:'108'},
+{id:39,cat:'成語填字',src:'108年',q:'「＿」否人物—評論人物優劣',a:'臧',note:'臧＝善好；臧否＝評論好壞（臧好否壞）',yr:'108'},
+{id:40,cat:'成語填字',src:'韓愈《進學解》',q:'業精於勤，荒於嬉；行成於思，毀於「＿」。',a:'隨',note:'隨＝隨便放縱；事業因放縱散漫而敗壞',yr:'108'},
+{id:41,cat:'成語填字',src:'109年',q:'「＿＿」氣揚—形容人驕傲自大',a:'趾高',note:'趾高氣揚＝腳抬高、神氣十足，形容驕傲自大的樣子',yr:'109'},
+{id:42,cat:'成語填字',src:'《孟子》',q:'野有餓「＿」—野地有餓死之人',a:'殍',note:'殍（piǎo）＝餓死的人；孟子：野有餓殍而不知發',yr:'109'},
+{id:43,cat:'成語填字',src:'109年',q:'「＿＿」附勢—奉承依附有權有勢的人',a:'趨炎',note:'趨炎＝趨向炎熱（權貴）；趨炎附勢，求名逐利',yr:'109'},
+{id:44,cat:'成語填字',src:'109年',q:'吹毛「＿＿」—故意挑剔他人錯誤',a:'求疵',note:'疵＝缺點；求疵＝刻意找缺點；吹開毛髮尋找缺陷',yr:'109'},
+{id:45,cat:'成語填字',src:'109年',q:'江郎「＿＿」—晚年才思衰退',a:'才盡',note:'江淹（江郎）早年才華洋溢，晚年才思枯竭',yr:'109'},
+{id:46,cat:'成語填字',src:'109年',q:'馬首「＿＿」—遵循領導者的一切指示',a:'是瞻',note:'瞻＝看；馬首是瞻＝跟著領導的馬頭走，形容服從指揮',yr:'109'},
+{id:47,cat:'成語填字',src:'《論語·里仁》',q:'君子無終食之間違仁，「＿＿」必於是，顛沛必於是。',a:'造次',note:'造次＝倉促緊迫之時；即使最倉皇時刻也不違背仁德',yr:'109'},
+{id:48,cat:'成語填字',src:'劉禹錫〈烏衣巷〉',q:'舊時王謝堂前燕，飛入「＿＿」百姓家。',a:'尋常',note:'尋常＝普通平常；昔日豪門大院如今成普通人家',yr:'109'},
+{id:49,cat:'成語填字',src:'《禮記·中庸》',q:'好學近乎知，力行近乎仁，「＿＿」近乎勇。',a:'知恥',note:'知恥＝知道羞恥；知恥是勇氣的根本來源',yr:'109'},
+{id:50,cat:'改錯字',src:'109/113常考',q:'提綱「切」領 → 正確字？（提起要點之意）',a:'挈',note:'挈（qiè）＝提起；提綱挈領＝抓住要點，切→挈',yr:'109'},
+{id:51,cat:'改錯字',src:'109年',q:'因「漏」就簡 → 正確字？（簡陋之意）',a:'陋',note:'陋＝簡陋；因陋就簡＝利用簡陋條件辦事，漏→陋',yr:'109'},
+{id:52,cat:'改錯字',src:'109年',q:'以身作「責」 → 正確字？（榜樣法則之意）',a:'則',note:'則＝法則榜樣；以身作則＝以自己言行作示範，責→則',yr:'109'},
+{id:53,cat:'改錯字',src:'109年',q:'「聲」竹難書 → 正確字？（用盡之意）',a:'罄',note:'罄（qìng）＝用盡；罄竹難書＝砍光竹子也寫不完',yr:'109'},
+{id:54,cat:'改錯字',src:'109年',q:'焚膏繼「勁」 → 正確字？（日影之意）',a:'晷',note:'晷（guǐ）＝日影；焚膏繼晷＝點油燈通宵苦讀，勁→晷',yr:'109'},
+{id:55,cat:'改錯字',src:'109年',q:'功虧一「潰」 → 正確字？（盛土竹筐之意）',a:'簣',note:'簣（kuì）＝盛土竹筐；功虧一簣＝差最後一筐土',yr:'109'},
+{id:56,cat:'改錯字',src:'113年《蘭亭集序》',q:'若「今」一契 → 正確字？（符合之意）',a:'合',note:'合＝符合；若合一契＝如同符契相合，形容感同身受，今→合',yr:'113'},
+{id:57,cat:'改錯字',src:'113年《蘭亭集序》',q:'未嘗不「蹋」文嗟悼 → 正確字？（面對之意）',a:'臨',note:'臨＝面對；臨文嗟悼＝閱讀到此文時感嘆悲悼，蹋→臨',yr:'113'},
+{id:58,cat:'改錯字',src:'113年《桃花源記》',q:'初極狹，「繪」通人 → 正確字？（僅僅之意）',a:'才',note:'才＝僅僅；才通人＝僅能一人通過，繪→才',yr:'113'},
+];
+
+const CATS=['全部','佳句填空','成語填字','改錯字'];
+const BADGECLS={佳句填空:'b1',成語填字:'b2',改錯字:'b3'};
+const KEY='poli-ch-v2';
+
+let filtered=[...Q],idx=0,shown=false,mastered={},curCat='全部',resetStep=0;
+
+function load(){try{const r=localStorage.getItem(KEY);if(r)mastered=JSON.parse(r);}catch(e){mastered={};}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(mastered));}catch(e){}}
+
+window.applyFilter=function(cat){
+  curCat=cat;filtered=cat==='全部'?[...Q]:Q.filter(q=>q.cat===cat);idx=0;shown=false;render();
+};
+window.move=function(d){idx=(idx+d+filtered.length)%filtered.length;shown=false;render();};
+window.reveal=function(){shown=true;render();};
+window.mark=function(ok){
+  mastered[filtered[idx].id]=ok;save();
+  if(idx<filtered.length-1){idx++;shown=false;}
+  render();
+};
+window.shuffle=function(){
+  for(let i=filtered.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[filtered[i],filtered[j]]=[filtered[j],filtered[i]];}
+  idx=0;shown=false;render();
+};
+window.reviewOnly=function(){
+  const base=curCat==='全部'?Q:Q.filter(q=>q.cat===curCat);
+  const todo=base.filter(q=>mastered[q.id]!==true);
+  filtered=todo.length>0?todo:base;idx=0;shown=false;render();
+};
+window.handleReset=function(){
+  const btn=document.getElementById('rb');
+  if(resetStep===0){
+    resetStep=1;btn.textContent='確定？';btn.classList.add('danger');
+    setTimeout(()=>{if(resetStep===1){resetStep=0;btn.innerHTML='↺<br>重置';btn.classList.remove('danger');}},3000);
+  }else{
+    resetStep=0;mastered={};save();
+    filtered=curCat==='全部'?[...Q]:Q.filter(q=>q.cat===curCat);
+    idx=0;shown=false;btn.innerHTML='↺<br>重置';btn.classList.remove('danger');render();
+  }
+};
+
+// Swipe
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+document.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx;
+  if(Math.abs(dx)>60){if(dx<0)window.move(1);else window.move(-1);}
+},{passive:true});
+
+function render(){
+  const total=filtered.length;
+  const mast=Q.filter(q=>mastered[q.id]===true).length;
+  const retry=Q.filter(q=>mastered[q.id]===false).length;
+  const un=Q.length-mast-retry;
+  const pct=Math.round(mast/Q.length*100);
+
+  document.getElementById('stats').innerHTML=`
+    <div class="stat g"><div class="stat-n">${mast}</div><div class="stat-l">已掌握</div></div>
+    <div class="stat r"><div class="stat-n">${retry}</div><div class="stat-l">複習中</div></div>
+    <div class="stat x"><div class="stat-n">${un}</div><div class="stat-l">未作答</div></div>`;
+  document.getElementById('prog').style.width=pct+'%';
+  document.getElementById('filters').innerHTML=CATS.map(c=>{
+    const n=c==='全部'?Q.length:Q.filter(q=>q.cat===c).length;
+    return`<button class="fb${curCat===c?' on':''}" onclick="applyFilter('${c}')">${c}(${n})</button>`;
+  }).join('');
+
+  if(total===0){
+    document.getElementById('sl').className='sl';
+    document.getElementById('card').innerHTML='<div class="qcard"><div class="empty">沒有題目</div></div>';
+    document.getElementById('ctr').textContent='';return;
+  }
+
+  const q=filtered[idx],ms=mastered[q.id];
+  document.getElementById('sl').className='sl'+(ms===true?' ok':ms===false?' retry':'');
+
+  const qHTML=q.q.replace(/＿/g,'<span class="blank">＿</span>');
+  const ans=shown
+    ?`<div class="aa"><div class="am">答：${q.a}</div><div class="an">${q.note}</div><div class="abtns"><button class="abtn aok" onclick="mark(true)">✓ 記住了</button><button class="abtn aret" onclick="mark(false)">✗ 再複習</button></div></div>`
+    :`<button class="sbtn" onclick="reveal()">點此顯示答案</button>`;
+
+  document.getElementById('card').innerHTML=`
+    <div class="qcard">
+      <div class="cmeta">
+        <div><span class="badge ${BADGECLS[q.cat]||'b1'}">${q.cat}</span><div class="csrc">${q.src}</div></div>
+        <span class="cyr">${q.yr}年</span>
+      </div>
+      <div class="qtext">${qHTML}</div>${ans}
+    </div>`;
+  document.getElementById('ctr').textContent=`${idx+1} / ${total}`;
+}
+
+load();render();
+</script>
+</body>
+</html>
